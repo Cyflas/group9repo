@@ -1,0 +1,41 @@
+
+//counts number of times a wrong id number has been sent//
+let firstName = attributeApi.get('firstName');
+let found = firstName !== null && firstName !== undefined && firstName !== '';
+attributeApi.set('matchFound', found ? 'true' : 'false');
+let tries = parseInt(attributeApi.get('idAttempts')) || 0;
+tries = found ? 0 : tries + 1;
+attributeApi.set('idAttempts', String(tries));
+attributeApi.set('manyTries', tries >= 3 ? 'true' : 'false');
+
+//handles how editValue edits the values and saves them, also checks validity of new value//
+let field = (attributeApi.get('editField') || '').trim().toLowerCase();
+let value = (attributeApi.get('newValue') || '').trim();
+
+if (value.toLowerCase() === 'cancel') {
+  attributeApi.set('editStatus', 'cancel');
+} else {
+  let column = '';
+  let ok = false;
+
+  if (field === 'first name') {
+    column = 'first_name';
+    ok = /^[A-Za-z\u00C0-\u00FF' -]{2,50}$/.test(value);
+  } else if (field === 'last name') {
+    column = 'last_name';
+    ok = /^[A-Za-z\u00C0-\u00FF' -]{2,50}$/.test(value);
+  } else if (field === 'email address') {
+    column = 'email_address';
+    ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  }
+
+  let body = {};
+  if (column !== '') { body[column] = value; }
+
+  attributeApi.set('editColumn', column);
+  attributeApi.set('editValue', value);
+  attributeApi.set('editBody', JSON.stringify(body));
+  attributeApi.set('editStatus', (ok && column !== '') ? 'valid' : 'invalid');
+}
+
+//end
